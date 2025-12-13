@@ -1,0 +1,238 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Mathematical Foundations of CART (1984):\\A Production Implementation}
+\author{Implementation Guide}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document describes the mathematical foundations of Classification and Regression Trees (CART) as originally defined by Breiman, Friedman, Olshen, and Stone in their seminal 1984 work. Our implementation follows these principles exactly, distinguishing it from modern approximations.
+
+\section{Tree Structure}
+
+A binary tree $T$ consists of nodes $t \in T$. Each node is either:
+\begin{itemize}
+    \item A \textbf{terminal node} (leaf): $t \in \tilde{T}$, where $\tilde{T}$ denotes the set of leaves
+    \item An \textbf{internal node}: has two children $t_L$ (left) and $t_R$ (right)
+\end{itemize}
+
+The tree defines a partition of the feature space $\mathcal{X}$ into regions $\{R_t : t \in \tilde{T}\}$.
+
+\section{Splitting Rules}
+
+\subsection{Numerical Features}
+
+For a numerical feature $X_j$, a split at node $t$ is defined by a threshold $c$:
+\begin{align}
+    t_L &= \{x : X_j(x) \leq c\} \\
+    t_R &= \{x : X_j(x) > c\}
+\end{align}
+
+\subsection{Categorical Features (True CART Methodology)}
+
+For a categorical feature $X_j$ with domain $\mathcal{C} = \{c_1, c_2, \ldots, c_k\}$, a split is defined by a \textbf{subset} $S \subset \mathcal{C}$:
+\begin{align}
+    t_L &= \{x : X_j(x) \in S\} \\
+    t_R &= \{x : X_j(x) \notin S\}
+\end{align}
+
+This is fundamentally different from one-hot encoding. Instead of creating $k$ binary features, CART finds the \textit{optimal binary partition} of the category set.
+
+\subsubsection{Efficient Categorical Splitting}
+
+For binary classification with classes $\{0, 1\}$, there exists an optimal ordering trick:
+\begin{enumerate}
+    \item For each category $c_i$, compute $\bar{y}_i = \mathbb{E}[Y | X_j = c_i]$
+    \item Sort categories by $\bar{y}_i$: $c_{(1)}, c_{(2)}, \ldots, c_{(k)}$
+    \item Only consider splits of the form $S = \{c_{(1)}, \ldots, c_{(m)}\}$ for $m = 1, \ldots, k-1$
+\end{enumerate}
+
+This reduces complexity from $O(2^k)$ to $O(k \log k)$.
+
+\section{Impurity Measures}
+
+\subsection{Classification: Gini Impurity}
+
+For a node $t$ with $K$ classes, let $p(j|t)$ be the proportion of class $j$ samples at node $t$. The Gini impurity is:
+\begin{equation}
+    i(t) = 1 - \sum_{j=1}^{K} p^2(j|t)
+\end{equation}
+
+Properties:
+\begin{itemize}
+    \item $i(t) = 0$ when node is pure (all samples same class)
+    \item $i(t)$ is maximum when classes are uniformly distributed
+    \item $i(t) \in [0, 1 - 1/K]$
+\end{itemize}
+
+\subsection{Regression: Mean Squared Error}
+
+For regression, the impurity at node $t$ is:
+\begin{equation}
+    i(t) = \frac{1}{N_t} \sum_{x_i \in t} (y_i - \bar{y}_t)^2
+\end{equation}
+
+where $N_t$ is the number of samples at $t$ and $\bar{y}_t = \frac{1}{N_t}\sum_{x_i \in t} y_i$.
+
+\section{Split Selection}
+
+The best split at node $t$ maximizes the \textbf{impurity decrease}:
+\begin{equation}
+    \Delta i(s, t) = i(t) - p_L i(t_L) - p_R i(t_R)
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $s$ is a candidate split
+    \item $p_L = N_{t_L}/N_t$ and $p_R = N_{t_R}/N_t$
+    \item $N_{t_L}$, $N_{t_R}$ are sample counts in children
+\end{itemize}
+
+We select:
+\begin{equation}
+    s^* = \arg\max_{s \in S_t} \Delta i(s, t)
+\end{equation}
+
+where $S_t$ is the set of all possible splits at node $t$.
+
+\section{Cost-Complexity Pruning}
+
+\subsection{The Cost-Complexity Measure}
+
+For a tree $T$, define the cost-complexity measure:
+\begin{equation}
+    R_\alpha(T) = R(T) + \alpha |\tilde{T}|
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $R(T) = \sum_{t \in \tilde{T}} r(t) \cdot p(t)$ is the error of tree $T$
+    \item $r(t)$ is the error rate at leaf $t$
+    \item $p(t) = N_t / N$ is the proportion of samples at $t$
+    \item $|\tilde{T}|$ is the number of leaves
+    \item $\alpha \geq 0$ is the complexity parameter
+\end{itemize}
+
+\subsection{Weakest Link Pruning}
+
+For each internal node $t$, let $T_t$ denote the subtree rooted at $t$. Define:
+\begin{equation}
+    g(t) = \frac{R(t) - R(T_t)}{|\tilde{T}_t| - 1}
+\end{equation}
+
+This represents the \textit{effective $\alpha$} at which pruning node $t$ becomes favorable.
+
+\textbf{Algorithm: Weakest Link Pruning}
+\begin{algorithmic}
+    \STATE Initialize $T_0 = T_{\text{max}}$ (fully grown tree)
+    \FOR{$k = 0, 1, 2, \ldots$}
+        \STATE Find node $\tilde{t}_k$ with minimum $g(t)$ among internal nodes of $T_k$
+        \STATE Set $\alpha_{k+1} = g(\tilde{t}_k)$
+        \STATE Prune $\tilde{t}_k$ to create $T_{k+1}$
+        \IF{$T_{k+1}$ is root only}
+            \STATE Break
+        \ENDIF
+    \ENDFOR
+\end{algorithmic}
+
+This produces a nested sequence:
+\begin{equation}
+    T_{\text{max}} \supset T_1 \supset T_2 \supset \cdots \supset \{\text{root}\}
+\end{equation}
+
+\subsection{Selecting Optimal $\alpha$}
+
+Use cross-validation or a validation set to select $\alpha^*$:
+\begin{equation}
+    \alpha^* = \arg\min_{\alpha} \text{Error}_{\text{validation}}(T(\alpha))
+\end{equation}
+
+where $T(\alpha)$ is the pruned tree for complexity $\alpha$.
+
+\section{Why Subset Splitting is Superior}
+
+\subsection{Information Preservation}
+
+One-hot encoding creates $k$ binary features from a $k$-category feature. Each binary split can only separate one category from the others, requiring up to $k-1$ splits to achieve any partition.
+
+Subset splitting can achieve \textit{any} binary partition in a single split, preserving the full information of the categorical variable.
+
+\subsection{Tree Depth}
+
+\textbf{Example:} Consider a 4-category feature: $\{A, B, C, D\}$
+
+\begin{itemize}
+    \item \textbf{One-hot encoding:} To achieve partition $\{A, C\}$ vs $\{B, D\}$ requires multiple splits over depth 2-3
+    \item \textbf{Subset splitting:} Achieved in single split at depth 1
+\end{itemize}
+
+\subsection{Statistical Efficiency}
+
+Subset splitting maintains the categorical nature of the variable, leading to:
+\begin{itemize}
+    \item More interpretable trees
+    \item Better sample efficiency (fewer splits needed)
+    \item Natural handling of category similarities
+\end{itemize}
+
+\section{Prediction}
+
+\subsection{Classification}
+
+For a leaf node $t$, predict the majority class:
+\begin{equation}
+    \hat{y}(x) = \arg\max_{j} p(j|t) \quad \text{for } x \in t
+\end{equation}
+
+\subsection{Regression}
+
+For a leaf node $t$, predict the mean:
+\begin{equation}
+    \hat{y}(x) = \bar{y}_t = \frac{1}{N_t} \sum_{x_i \in t} y_i \quad \text{for } x \in t
+\end{equation}
+
+\section{Implementation Considerations}
+
+\subsection{Computational Complexity}
+
+\begin{itemize}
+    \item \textbf{Numerical splits:} $O(n \log n)$ per feature (sorting)
+    \item \textbf{Categorical splits (binary):} $O(k \log k)$ using ordering trick
+    \item \textbf{Categorical splits (general):} $O(2^k)$ or use greedy heuristic
+    \item \textbf{Tree growing:} $O(n \cdot p \cdot \log n)$ for $n$ samples, $p$ features
+    \item \textbf{Pruning:} $O(|T|^2)$ for tree with $|T|$ nodes
+\end{itemize}
+
+\subsection{Numerical Stability}
+
+When computing impurity:
+\begin{itemize}
+    \item Check for division by zero when $N_t = 0$
+    \item Use numerical stable formulas for variance computations
+    \item Handle edge cases where all samples have same feature value
+\end{itemize}
+
+\section{Conclusion}
+
+This implementation follows the original CART methodology rigorously, providing:
+\begin{enumerate}
+    \item True categorical handling via subset splitting
+    \item Cost-complexity pruning for optimal tree selection
+    \item Transparent, interpretable tree structures
+    \item Educational value for understanding the algorithm
+\end{enumerate}
+
+The key insight is that CART treats categorical variables as first-class citizens, not as sets of binary indicators. This leads to more efficient, interpretable, and accurate models.
+
+\end{document}
