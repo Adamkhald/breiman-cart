@@ -53,8 +53,9 @@ from .node import Node
 from .splitter import Splitter
 from .pruning import CostComplexityPruner
 
-__version__ = "2.0.0"
-__author__ = "Senior ML Engineer"
+__version__ = "0.1.1"
+__author__ = "Adam Khald"
+__doc_url__ = "https://github.com/Adamkhald/breiman-cart"
 __all__ = [
     "CARTClassifier",
     "CARTRegressor",
