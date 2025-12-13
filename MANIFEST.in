@@ -1,0 +1,8 @@
+include ReadMe.md
+include LICENSE
+include requirements.txt
+recursive-include docs *.pdf *.tex
+recursive-exclude tests *
+recursive-exclude .pytest_cache *
+global-exclude __pycache__
+global-exclude *.py[co]
