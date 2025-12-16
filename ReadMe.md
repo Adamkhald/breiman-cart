@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://pepy.tech/badge/breiman-cart)](https://pepy.tech/project/breiman-cart)
 
-A pure Python implementation of **Classification and Regression Trees (CART)** following the original methodology from Breiman, Friedman, Olshen, and Stone (1984).
+A pure Python implementation of **Classification and Regression Trees (CART)** following the original methodology from Breiman, Friedman, Olshen, and Stone (1984). 
 
 **Why use this?** Unlike sklearn's implementation, this provides a faithful reproduction of the original CART algorithm with full access to the tree-building process, cost-complexity pruning, and educational transparency.
 
