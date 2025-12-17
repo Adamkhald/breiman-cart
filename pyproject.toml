@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "breiman-cart"
-version = "0.1.1"
+version = "0.2.0"
 description = "Implementation of Breiman's CART (Classification and Regression Trees) algorithm"
 readme = "ReadMe.md"
 requires-python = ">=3.8"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["cart", "decision-tree", "machine-learning", "breiman"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -31,7 +31,6 @@ classifiers = [
 dependencies = [
     "numpy>=1.20.0",
     "pandas>=1.3.0",
-    "scikit-learn>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -46,8 +45,3 @@ Homepage = "https://github.com/Adamkhald/breiman-cart"
 Repository = "https://github.com/Adamkhald/breiman-cart"
 Documentation = "https://github.com/Adamkhald/breiman-cart#readme"
 Issues = "https://github.com/Adamkhald/breiman-cart/issues"
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["src*"]
-exclude = ["tests*", "docs*"]
