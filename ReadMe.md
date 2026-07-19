@@ -15,7 +15,7 @@
 
 Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Adamkhald/breiman-cart)
 
-Available on pypi: [https://github.com/Adamkhald/breiman-cart](https://pypi.org/project/breiman-cart/)
+Available on pypi: [https://pypi.org/project/breiman-cart/](https://pypi.org/project/breiman-cart/)
 
 ---
 
