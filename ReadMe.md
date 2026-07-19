@@ -7,6 +7,18 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://pepy.tech/badge/breiman-cart)](https://pepy.tech/project/breiman-cart)
 
+---
+
+## Contact
+
+**Adam Khald** - ad.khald@edu.umi.ac.ma
+
+Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Adamkhald/breiman-cart)
+
+Available on pypi: [[https://github.com/Adamkhald/breiman-cart](https://pypi.org/project/breiman-cart/)]
+
+---
+
 A pure Python implementation of **Classification and Regression Trees (CART)** following the original methodology from Breiman, Friedman, Olshen, and Stone (1984).
 
 **Why use this?** Unlike sklearn's implementation, this provides a faithful reproduction of the original CART algorithm with full access to the tree-building process, cost-complexity pruning, and educational transparency.
@@ -431,14 +443,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Contact
-
-**Adam Khald** - adamkhald@outlook.com
-
-Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Adamkhald/breiman-cart)
 
 ---
 
