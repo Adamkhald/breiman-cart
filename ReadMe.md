@@ -474,12 +474,4 @@ Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Ada
 
 ---
 
-## Star History
-
-If you find this project useful, please consider giving it a star on GitHub!
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Adamkhald/breiman-cart&type=Date)](https://star-history.com/#Adamkhald/breiman-cart&Date)
-
----
-
 **Made by Adam Khald**
