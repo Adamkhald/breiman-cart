@@ -1,30 +1,58 @@
-# 🌳 Breiman CART
+# Breiman CART
 
 [![PyPI version](https://badge.fury.io/py/breiman-cart.svg)](https://badge.fury.io/py/breiman-cart)
 [![Python](https://img.shields.io/pypi/pyversions/breiman-cart.svg)](https://pypi.org/project/breiman-cart/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://pepy.tech/badge/breiman-cart)](https://pepy.tech/project/breiman-cart)
 
-A pure Python implementation of **Classification and Regression Trees (CART)** following the original methodology from Breiman, Friedman, Olshen, and Stone (1984). 
+A pure Python implementation of **Classification and Regression Trees (CART)** following the original methodology from Breiman, Friedman, Olshen, and Stone (1984).
 
 **Why use this?** Unlike sklearn's implementation, this provides a faithful reproduction of the original CART algorithm with full access to the tree-building process, cost-complexity pruning, and educational transparency.
 
 ---
 
-## ✨ Features
+## What is CART?
 
-- 🎯 **Original CART Algorithm** - Faithful implementation of Breiman et al. (1984)
-- 🔢 **Regression & Classification** - Support for both continuous and categorical targets
-- 📊 **Categorical Features** - Native handling of categorical variables without encoding
-- ✂️ **Cost-Complexity Pruning** - Automatic tree pruning to prevent overfitting
-- 🎨 **Feature Importance** - Built-in feature importance calculation
-- 💾 **Model Persistence** - Easy save/load functionality
-- 🔍 **Tree Inspection** - Full access to tree structure and node information
-- 🤖 **Sklearn Compatible** - Familiar API for ML practitioners
+CART (Classification and Regression Trees) is the decision tree algorithm introduced by Leo Breiman, Jerome Friedman, Richard Olshen, and Charles Stone in their 1984 book *Classification and Regression Trees*. It builds a predictive model by recursively partitioning the feature space into a binary tree of decision rules.
+
+The core mechanics of the algorithm are:
+
+- **Recursive binary splitting.** Starting from the full dataset at the root node, CART searches over every feature and every possible split point for that feature, and selects the single split that best separates the data according to an impurity criterion. Each resulting subset becomes a child node, and the process repeats recursively.
+- **Splitting criteria.** For classification trees, the quality of a split is measured using **Gini impurity**, which quantifies how mixed the classes are within a node. For regression trees, the quality of a split is measured using **mean squared error (MSE)** of the target variable within each resulting subset.
+- **Binary splits only.** Unlike algorithms such as ID3 or C4.5, which can produce multi-way splits, CART always partitions a node into exactly two children, regardless of whether the feature is continuous or categorical. For categorical features, this means CART evaluates possible groupings of categories into two subsets to find the binary partition that best reduces impurity, rather than treating each category as its own branch.
+- **Stopping criteria.** Tree growth halts at a node when further splitting would violate constraints such as maximum depth, minimum samples required to split a node, or minimum samples required at a leaf.
+- **Cost-complexity pruning.** A fully grown tree tends to overfit the training data. CART addresses this with cost-complexity pruning (also called weakest-link pruning): a complexity parameter (alpha) penalizes trees with more leaves, and the algorithm identifies the subtree that minimizes a combination of training error and tree size, typically selected via cross-validation on a held-out set.
+
+This package reproduces that original formulation directly, rather than the modified/optimized variant used internally by scikit-learn, so that every step of the tree-building and pruning process remains inspectable.
+
+## How It Is Implemented
+
+This implementation follows the original CART formulation in pure Python, organized around three main classes:
+
+- **`BRCRegression`** and **`BRCClassification`** implement the tree-growing algorithm: at each node, every candidate feature and split point is evaluated against the relevant impurity criterion (MSE for regression, Gini impurity for classification), and the split that yields the greatest impurity reduction is chosen. Growth continues recursively, subject to `max_depth`, `min_samples_split`, and `min_samples_leaf` constraints, until no further valid split improves the objective or a stopping condition is reached.
+- **Categorical features** are handled natively: instead of one-hot encoding, the algorithm searches over binary groupings of category values directly, in line with the original CART methodology, so categorical columns can be passed in as-is via the `categorical_features` argument.
+- **Cost-complexity pruning** is implemented as a post-processing step (`prune()`) that walks the fully grown tree, computes the effective alpha for each candidate subtree, and either selects the optimal alpha automatically using a validation set or applies a user-specified alpha directly.
+- **Tree structure** is represented as a recursive node structure, exposing structural queries such as depth, leaf count, and total node count directly on the fitted model, as well as export to a dictionary or JSON representation for external inspection.
+- **`BRCInference`** wraps a trained model (or a model loaded from disk) to provide a stable, minimal interface for deployment: prediction, scoring, feature importance, and structural metadata, without exposing the training-time API surface.
+- **Feature importance** is computed from the total impurity reduction attributable to each feature across all splits in the tree, normalized across features.
+- The public API mirrors scikit-learn's `fit` / `predict` / `score` conventions so it can be used as a drop-in educational or diagnostic alternative in familiar workflows, while model persistence (`save` / `load`) and JSON export support production and inspection use cases respectively.
 
 ---
 
-## 🚀 Quick Start
+## Features
+
+- **Original CART Algorithm** - Faithful implementation of Breiman et al. (1984)
+- **Regression & Classification** - Support for both continuous and categorical targets
+- **Categorical Features** - Native handling of categorical variables without encoding
+- **Cost-Complexity Pruning** - Automatic tree pruning to prevent overfitting
+- **Feature Importance** - Built-in feature importance calculation
+- **Model Persistence** - Easy save/load functionality
+- **Tree Inspection** - Full access to tree structure and node information
+- **Sklearn Compatible** - Familiar API for ML practitioners
+
+---
+
+## Quick Start
 
 ### Installation
 
@@ -58,9 +86,9 @@ print(f"Accuracy: {accuracy:.2%}")
 
 ---
 
-## 📚 Complete Examples
+## Complete Examples
 
-### 🔵 Regression Example
+### Regression Example
 
 ```python
 import breiman_cart as brc
@@ -103,7 +131,7 @@ for feature, score in zip(X_train.columns, importance):
     print(f"{feature}: {score:.3f}")
 ```
 
-### 🟢 Classification Example
+### Classification Example
 
 ```python
 import breiman_cart as brc
@@ -140,7 +168,7 @@ accuracy = clf.score(X_train, y_train)
 print(f"Accuracy: {accuracy:.2%}")
 ```
 
-### 🔮 Inference Engine
+### Inference Engine
 
 Use the inference engine for production deployments:
 
@@ -175,7 +203,7 @@ print(inference)
 
 ---
 
-## 🎓 Advanced Features
+## Advanced Features
 
 ### Cost-Complexity Pruning
 
@@ -248,7 +276,7 @@ model.to_json('tree_structure.json')
 
 ---
 
-## 🔧 API Reference
+## API Reference
 
 ### BRCRegression
 
@@ -310,17 +338,17 @@ brc.BRCInference(model)  # Pass trained model or file path
 
 ---
 
-## 📊 Comparison with Sklearn
+## Comparison with Sklearn
 
 | Feature | breiman-cart | sklearn DecisionTree |
 |---------|--------------|---------------------|
-| CART Algorithm | ✅ Original (1984) | Modified |
-| Cost-Complexity Pruning | ✅ Automatic | Manual (`ccp_alpha`) |
-| Categorical Features | ✅ Native | Requires encoding |
-| Tree Inspection | ✅ Full access | Limited |
-| Educational Value | ✅ High | Medium |
+| CART Algorithm | Original (1984) | Modified |
+| Cost-Complexity Pruning | Automatic | Manual (`ccp_alpha`) |
+| Categorical Features | Native | Requires encoding |
+| Tree Inspection | Full access | Limited |
+| Educational Value | High | Medium |
 | Performance | Good | Excellent (C++) |
-| Interpretability | ✅ Excellent | Good |
+| Interpretability | Excellent | Good |
 
 **Use breiman-cart when:**
 - You want the original CART algorithm
@@ -336,7 +364,7 @@ brc.BRCInference(model)  # Pass trained model or file path
 
 ---
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -365,17 +393,17 @@ inference = brc.BRCInference(reg)
 preds = inference.predict(X)
 assert len(preds) == len(X), "Inference test failed"
 
-print("✅ All tests passed!")
+print("All tests passed!")
 ```
 
 ---
 
-## 📖 Background
+## Background
 
 This implementation follows the seminal work:
 
-> **Breiman, L., Friedman, J., Olshen, R., & Stone, C. (1984).**  
-> *Classification and Regression Trees.*  
+> **Breiman, L., Friedman, J., Olshen, R., & Stone, C. (1984).**
+> *Classification and Regression Trees.*
 > Wadsworth International Group.
 
 CART is a decision tree algorithm that:
@@ -386,7 +414,7 @@ CART is a decision tree algorithm that:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -398,13 +426,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 📬 Contact
+## Contact
 
 **Adam Khald** - adamkhald@outlook.com
 
@@ -412,7 +440,7 @@ Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Ada
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Leo Breiman and colleagues for the original CART algorithm
 - The scikit-learn team for API inspiration
@@ -420,15 +448,15 @@ Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Ada
 
 ---
 
-## 📈 Changelog
+## Changelog
 
 ### Version 0.2.0 (Current)
-- ✨ **NEW:** Clean sklearn-compatible API with `BRCRegression`, `BRCClassification`, `BRCInference`
-- ✨ **NEW:** `BRCInference` class for production deployments
-- 🎨 Improved user experience with intuitive class names
-- 📚 Comprehensive documentation and examples
-- 🐛 Better error messages and validation
-- 🔧 Feature importance as named dictionary in `BRCInference`
+- **NEW:** Clean sklearn-compatible API with `BRCRegression`, `BRCClassification`, `BRCInference`
+- **NEW:** `BRCInference` class for production deployments
+- Improved user experience with intuitive class names
+- Comprehensive documentation and examples
+- Better error messages and validation
+- Feature importance as named dictionary in `BRCInference`
 
 ### Version 0.1.1
 - Added comprehensive input validation
@@ -444,7 +472,7 @@ Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Ada
 
 ---
 
-## ⭐ Star History
+## Star History
 
 If you find this project useful, please consider giving it a star on GitHub!
 
@@ -452,4 +480,4 @@ If you find this project useful, please consider giving it a star on GitHub!
 
 ---
 
-**Made with ❤️ by Adam Khald**
+**Made by Adam Khald**
