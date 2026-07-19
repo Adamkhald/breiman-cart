@@ -1,5 +1,7 @@
 # Breiman CART
 
+![CART Tree Banner](cart_tree_banner.png)
+
 [![PyPI version](https://badge.fury.io/py/breiman-cart.svg)](https://badge.fury.io/py/breiman-cart)
 [![Python](https://img.shields.io/pypi/pyversions/breiman-cart.svg)](https://pypi.org/project/breiman-cart/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -470,6 +472,13 @@ Project Link: [https://github.com/Adamkhald/breiman-cart](https://github.com/Ada
 - Cost-complexity pruning
 - Categorical feature support
 
+---
+
+## Star History
+
+If you find this project useful, please consider giving it a star on GitHub!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Adamkhald/breiman-cart&type=Date)](https://star-history.com/#Adamkhald/breiman-cart&Date)
 
 ---
 
